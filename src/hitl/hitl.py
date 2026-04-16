@@ -84,14 +84,48 @@ class ConfidenceRouter:
         #      action="escalate", priority="high",
         #      requires_human=True, reason="Low confidence — escalating"
 
-        return RoutingDecision(
-            action="auto_send",
-            confidence=confidence,
-            reason="TODO: implement routing logic",
-            priority="low",
-            requires_human=False,
-        )  # TODO: Replace with implementation
+        # return RoutingDecision(
+        #     action="auto_send",
+        #     confidence=confidence,
+        #     reason="TODO: implement routing logic",
+        #     priority="low",
+        #     requires_human=False,
+        # )  # TODO: Replace with implementation
+        if action_type in HIGH_RISK_ACTIONS:
+            return RoutingDecision(
+                action="escalate",
+                confidence=confidence,
+                reason=f"High-risk action: {action_type}",
+                priority="high",
+                requires_human=True,
+            )
 
+        if confidence >= self.HIGH_THRESHOLD:
+            return RoutingDecision(
+                action="auto_send",
+                confidence=confidence,
+                reason="High confidence",
+                priority="low",
+                requires_human=False,
+            )
+
+        elif confidence >= self.MEDIUM_THRESHOLD:
+            return RoutingDecision(
+                action="queue_review",
+                confidence=confidence,
+                reason="Medium confidence - needs review",
+                priority="normal",
+                requires_human=True,
+            )
+
+        else:
+            return RoutingDecision(
+                action="escalate",
+                confidence=confidence,
+                reason="Low confidence - escalating",
+                priority="high",
+                requires_human=True,
+            )
 
 # ============================================================
 # TODO 13: Design 3 HITL decision points
@@ -109,27 +143,42 @@ class ConfidenceRouter:
 hitl_decision_points = [
     {
         "id": 1,
-        "name": "TODO: Name this decision point",
-        "trigger": "TODO: When does this trigger?",
-        "hitl_model": "TODO: human-in-the-loop / human-on-the-loop / human-as-tiebreaker",
-        "context_needed": "TODO: What does the reviewer need to see?",
-        "example": "TODO: Give a concrete example scenario",
+        # "name": "TODO: Name this decision point",
+        # "trigger": "TODO: When does this trigger?",
+        # "hitl_model": "TODO: human-in-the-loop / human-on-the-loop / human-as-tiebreaker",
+        # "context_needed": "TODO: What does the reviewer need to see?",
+        # "example": "TODO: Give a concrete example scenario",
+        "name": "Large fund transfer",
+        "trigger": "amount > 50M VND",
+        "hitl_model": "human-in-the-loop",
+        "context_needed": "account balance, history, recipient info",
+        "example": "User requests transfer of 100M VND to new account",
     },
     {
         "id": 2,
-        "name": "TODO: Name this decision point",
-        "trigger": "TODO: When does this trigger?",
-        "hitl_model": "TODO: human-in-the-loop / human-on-the-loop / human-as-tiebreaker",
-        "context_needed": "TODO: What does the reviewer need to see?",
-        "example": "TODO: Give a concrete example scenario",
+        # "name": "TODO: Name this decision point",
+        # "trigger": "TODO: When does this trigger?",
+        # "hitl_model": "TODO: human-in-the-loop / human-on-the-loop / human-as-tiebreaker",
+        # "context_needed": "TODO: What does the reviewer need to see?",
+        # "example": "TODO: Give a concrete example scenario",
+        "name": "Sensitive info change",
+        "trigger": "update personal info or password",
+        "hitl_model": "human-as-tiebreaker",
+        "context_needed": "identity verification, past changes",
+        "example": "User wants to change phone number linked to account",
     },
     {
         "id": 3,
-        "name": "TODO: Name this decision point",
-        "trigger": "TODO: When does this trigger?",
-        "hitl_model": "TODO: human-in-the-loop / human-on-the-loop / human-as-tiebreaker",
-        "context_needed": "TODO: What does the reviewer need to see?",
-        "example": "TODO: Give a concrete example scenario",
+        # "name": "TODO: Name this decision point",
+        # "trigger": "TODO: When does this trigger?",
+        # "hitl_model": "TODO: human-in-the-loop / human-on-the-loop / human-as-tiebreaker",
+        # "context_needed": "TODO: What does the reviewer need to see?",
+        # "example": "TODO: Give a concrete example scenario",
+        "name": "Low-confidence financial advice",
+        "trigger": "confidence < 0.7",
+        "hitl_model": "human-on-the-loop",
+        "context_needed": "model reasoning + user query",
+        "example": "Agent unsure about loan eligibility advice",
     },
 ]
 

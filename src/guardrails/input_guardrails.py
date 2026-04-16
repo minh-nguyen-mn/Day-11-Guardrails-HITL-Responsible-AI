@@ -41,6 +41,23 @@ def detect_injection(user_input: str) -> bool:
         # TODO: Add at least 5 regex patterns
         # Example:
         # r"ignore (all )?(previous|above) instructions",
+        r"ignore (all )?(previous|above) instructions",
+        r"you are now",
+        r"system prompt",
+        r"reveal.*(prompt|instructions|password|api key)",
+        r"pretend you are",
+        r"act as (a )?(unrestricted|dan)",
+        r"disregard (all )?prior",
+        r"(admin password|api key|database host)",
+        r"(internal system|connect to).*",
+        r"(complete|fill).*(___|password|api|key)",
+        r"(what|which).*systems.*(connect|access)",
+        r"(database|internal).* (host|port|connection)",
+        r"(list|show).*internal",
+        r"ignore (all )?(previous|above|prior).*instructions",
+        r"developer\s*mode",
+        r"jailbreak",
+        r"override.*(rules|instructions)",
     ]
 
     for pattern in INJECTION_PATTERNS:
@@ -75,8 +92,14 @@ def topic_filter(user_input: str) -> bool:
     # 2. If input doesn't contain any allowed topic -> return True
     # 3. Otherwise -> return False (allow)
 
-    pass  # Replace with your implementation
+    # pass  # Replace with your implementation
+    if any(b in input_lower for b in BLOCKED_TOPICS):
+            return True
 
+    if not any(a in input_lower for a in ALLOWED_TOPICS):
+        return True
+
+    return False
 
 # ============================================================
 # TODO 5: Implement InputGuardrailPlugin
@@ -135,7 +158,16 @@ class InputGuardrailPlugin(base_plugin.BasePlugin):
         #    - If True: increment blocked_count, return self._block_response("...")
         # 3. If both are False: return None (let message through)
 
-        pass  # Replace with your implementation
+        # pass  # Replace with your implementation
+        if detect_injection(text):
+            self.blocked_count += 1
+            return self._block_response("Request blocked: potential prompt injection detected.")
+
+        if topic_filter(text):
+            self.blocked_count += 1
+            return self._block_response("Request blocked: only banking-related queries are allowed.")
+
+        return None
 
 
 # ============================================================
